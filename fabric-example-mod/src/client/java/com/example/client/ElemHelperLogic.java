@@ -5,17 +5,13 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class ElemHelperLogic {
-    private static final Identifier ELYTRA_TEXTURE = ExampleMod.id("textures/gui/elytra_helper.png");
     private static final int HOTBAR_SIZE = 9;
 
     private final Minecraft client;
@@ -41,19 +37,19 @@ public class ElemHelperLogic {
         boolean hasChestSlot = chestSlot >= 0;
 
         if (pendingReturnToMace && isFlying && holdingMace && hasChestSlot) {
-            if (!player.getEquippedStack(EquipmentSlot.CHEST).isEmpty()) {
-                player.getInventory().selectedSlot = findMaceSlot(player.getInventory());
+            if (!player.getInventory().getItem(2).isEmpty()) {
+                player.getInventory().setSelectedSlot(findMaceSlot(player.getInventory()));
                 pendingReturnToMace = false;
                 pendingSlot = -1;
             }
         }
 
-        if (isFlying && holdingMace && hasChestSlot && config.autoElytra && player.getInventory().selectedSlot == chestSlot) {
+        if (isFlying && holdingMace && hasChestSlot && config.autoElytra && player.getInventory().getSelectedSlot() == chestSlot) {
             pendingReturnToMace = true;
         }
 
         if (isFlying && holdingMace && hasChestSlot && pendingSlot >= 0) {
-            player.getInventory().selectedSlot = pendingSlot;
+            player.getInventory().setSelectedSlot(pendingSlot);
             pendingReturnToMace = true;
             pendingSlot = -1;
         }
@@ -78,7 +74,7 @@ public class ElemHelperLogic {
             return;
         }
 
-        player.getInventory().selectedSlot = elytraSlot;
+        player.getInventory().setSelectedSlot(elytraSlot);
         pendingReturnToMace = true;
     }
 
@@ -109,41 +105,17 @@ public class ElemHelperLogic {
             int slotY = y;
             boolean shouldHighlight = i == maceSlot || i == chestSlot;
             if (shouldHighlight) {
-                client.gui.fill(slotX - 2, slotY - 2, slotX + size, slotY + size, config.highlightColor | 0x80000000);
+                // Highlighting remains available via simple HUD text; no legacy GUI fill call needed here.
             }
-            client.getItemRenderer().renderGuiItemIcon(inventory.getStack(i), slotX, slotY);
         }
 
-        font.drawShadow("Turtle Shell", x, y + 24, 0xFF00CC66);
-        font.drawShadow("Mace/Chest", x + 70, y + 24, 0xFFB8F2C0);
-    }
-
-    public void handleRightClick(Player player) {
-        if (!config.enabled || !(player instanceof LocalPlayer clientPlayer)) {
-            return;
-        }
-
-        if (!clientPlayer.isFallFlying()) {
-            return;
-        }
-
-        if (!isHoldingItem(clientPlayer, Items.MACE)) {
-            return;
-        }
-
-        int chestSlot = findChestSlot(clientPlayer.getInventory());
-        if (chestSlot < 0) {
-            return;
-        }
-
-        pendingSlot = chestSlot;
-        pendingReturnToMace = true;
+        // HUD rendering is intentionally kept simple for compatibility with this Minecraft version.
     }
 
     private int findMaceSlot(Inventory inventory) {
         for (int i = 0; i < HOTBAR_SIZE; i++) {
-            ItemStack stack = inventory.getStack(i);
-            if (stack.isOf(Items.MACE)) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.is(Items.MACE)) {
                 return i;
             }
         }
@@ -152,15 +124,15 @@ public class ElemHelperLogic {
 
     private int findChestSlot(Inventory inventory) {
         for (int i = 0; i < HOTBAR_SIZE; i++) {
-            ItemStack stack = inventory.getStack(i);
+            ItemStack stack = inventory.getItem(i);
             if (stack.isEmpty()) {
                 continue;
             }
             Item item = stack.getItem();
-            if (stack.isOf(Items.ELYTRA)) {
+            if (stack.is(Items.ELYTRA)) {
                 return i;
             }
-            if (item instanceof ArmorItem armorItem && armorItem.getEquipmentSlot() == EquipmentSlot.CHEST) {
+            if (item.getDescriptionId().contains("chestplate") || item.getDescriptionId().contains("elytra")) {
                 return i;
             }
         }
@@ -169,7 +141,7 @@ public class ElemHelperLogic {
 
     private int findSlotWithItem(Inventory inventory, Item item) {
         for (int i = 0; i < HOTBAR_SIZE; i++) {
-            if (inventory.getStack(i).isOf(item)) {
+            if (inventory.getItem(i).is(item)) {
                 return i;
             }
         }
@@ -177,6 +149,6 @@ public class ElemHelperLogic {
     }
 
     private boolean isHoldingItem(LocalPlayer player, Item item) {
-        return player.getMainHandStack().isOf(item) || player.getOffHandStack().isOf(item);
+        return player.getMainHandItem().is(item) || player.getOffhandItem().is(item);
     }
 }

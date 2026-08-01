@@ -18,7 +18,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"modid" {
+		"elemhelper" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
@@ -60,6 +60,7 @@ java {
 jar {
 	def projectName = project.name
 	inputs.property "projectName", projectName
+	archiveBaseName = 'ElemHelper'
 
 	from("LICENSE") {
 		rename { "${it}_$projectName"}
