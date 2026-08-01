@@ -1,11 +1,9 @@
 package com.example.client;
 
-import net.minecraft.client.gui.DrawContext;
-
 public class ElemHelperHud {
-    public void render(DrawContext drawContext, float tickDelta) {
+    public void render(Object graphics, float tickDelta) {
         if (ExampleModClient.logic != null) {
-            ExampleModClient.logic.renderHud(drawContext, tickDelta);
+            ExampleModClient.logic.renderHud(null, 0, 0, tickDelta);
         }
     }
 }

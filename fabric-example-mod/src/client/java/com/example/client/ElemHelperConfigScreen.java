@@ -1,6 +1,5 @@
 package com.example.client;
 
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -68,16 +67,6 @@ public class ElemHelperConfigScreen extends Screen {
         }).bounds(x, this.height - 36, 200, 20).build());
     }
 
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
-
-        context.drawTextWithShadow(this.font, Component.literal("Turtle Shell Helper"), this.width / 2 - 70, 24, 0xFF00CC66);
-        context.drawTextWithShadow(this.font, Component.literal("Flying + mace + chest slot = easy elytra flow"), this.width / 2 - 100, 40, 0xFFB8F2C0);
-    }
-
-    @Override
     public void close() {
         config.save();
         if (this.minecraft != null) {
